@@ -1,0 +1,20 @@
+sudo: required
+services:
+  - docker
+
+before_install:
+ - docker build -t tuliomonteiro/react-test -f ./client/Dockerfile.dev ./client
+
+script:
+  - docker run tuliomonteiro/react-test npm test -- --coverage
+
+after_success:
+  - docker build -t tuliomonteiro/multi-client ./client
+  - docker build -t tuliomonteiro/multi-nginx ./nginx
+  - docker build -t tuliomonteiro/multi-server ./server
+  - docker build -t tuliomonteio/multi-worker ./worker
+  - echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_ID" --password-stdin
+  - docker push tuliomonteiro/multi-client
+  - docker push tuliomonteiro/multi-nginx
+  - docker push tuliomonteiro/multi-server
+  - docker push tuliomonteiro/multi-worker
